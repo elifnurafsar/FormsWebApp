@@ -26,13 +26,21 @@
             <input type="checkbox" class="form-check-input" id="exampleCheck1" asp-for="keep_logged_in">
             <label class="form-check-label" for="exampleCheck1">Keep me logged in.</label>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-
+        <button type="submit" class="btn btn-primary">Login</button>
+        <button type="submit" asp-controller="Access" asp-action="Register" class="btn btn-info">Register</button>
+       
         @if (ViewData["ValidateMessage"] != null)
         {
             <br />
             <br />
             <label>@ViewData["ValidateMessage"]</label>
+        }
+
+        @if (TempData["Message"] != null)
+        {
+            <br />
+            <br />
+            <label>@TempData["Message"]</label>
         }
     </form>
 </body>

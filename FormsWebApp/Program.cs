@@ -1,6 +1,13 @@
+using FormsWebApp.Context;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+///////////////////////////Register database context//////////////////////////////////////////
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("localDatabase")));
+///////////////////////////////////////////////////////////////////////////////////////////
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -40,5 +47,9 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Access}/{action=Login}/{id?}");
+
+app.MapControllerRoute(
+    name: "register",
+    pattern: "{controller=CLogins}/{action=Create}/{id?}");
 
 app.Run();

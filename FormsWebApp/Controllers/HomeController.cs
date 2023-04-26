@@ -5,6 +5,8 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using FormsWebApp.Context;
+using System.Security.Claims;
 
 namespace FormsWebApp.Controllers
 {
@@ -12,6 +14,7 @@ namespace FormsWebApp.Controllers
     [Authorize]
     public class HomeController : Controller
     {
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<HomeController> _logger;
 
         public HomeController(ILogger<HomeController> logger)
@@ -21,6 +24,9 @@ namespace FormsWebApp.Controllers
 
         public IActionResult Index()
         {
+            ClaimsPrincipal claimUser = HttpContext.User;
+            string username = claimUser.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault().Value.ToString();
+            ViewData["username"] = username;
             return View();
         }
 
