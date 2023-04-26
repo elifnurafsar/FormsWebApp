@@ -2,13 +2,175 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    @if (ViewData["username"] != null)
-    {
-        <br />
-        <br />
-        <label>@ViewData["username"]</label>
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <title>Home</title>
+</head>
+<body>
+    <div id="Welcoming" class="text-center">
+        <h3 class="display-4">Welcome</h3>
+        @if (ViewData["username"] != null)
+        {
+            <br />
+            <br />
+            <label>@ViewData["username"]</label>
+        }
+
+
+    </div>
+   
+    <form>
+        <div class="form-group">
+            <div id="form_list">
+                <h1>My Forms</h1>
+                <ul id="MyForms" class="list-group list-group-light">
+                </ul>
+            </div>
+        </div>
+        <div class="form-footer">
+            <!-- Button trigger modal -->
+            <button type="button" id="show_pop_up" class="btn btn-primary">
+                Add New Form
+            </button>
+        </div>
+    </form>
+
+    <!-- Modal -->
+    <div id="popup" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Form</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="CreateForm">
+                        <div id="form_grup_form_name" class="form-group">
+                            <label for="FormName">Form Name</label>
+                            <input type="text" class="form-control" id="FormName" placeholder="Enter a form name">
+                        </div>
+                        <div id="form_grup_form_description" class="form-group">
+                            <label for="FormDescription">Form Description</label>
+                            <input type="text" class="form-control" id="FormDescription" placeholder="Enter a description">
+                        </div>
+                        <div id="form_grup_field_list">
+                            <h1>Fields List</h1>
+                            <ul id="FormListItems" class="list-group list-group-light">
+                            </ul>
+                        </div>
+                        <ul id="form_grup_field_options" class="list-group list-group-light">
+                            <li class="list-group-item"> <input type="text" class="form-control" id="data_type" placeholder="Data Type (STRING or NUMBER)"> <input type="text" class="form-control" id="field_name" placeholder="Field Name"> <input type="checkbox" class="form-check-input" id="is_required">  <label for="is_required"> Is Required</label><br><br> <button type="button" onclick="addField()"> <i id="add_field" class="fa-solid fa-plus"></i></button> </li>
+                        </ul>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="close_btn" onclick="closePopUp()" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" onclick="addForm()" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    var currentFormList = new Array();
+    var currentFieldList = new Array();
+
+    function getForms() {
+        var _url = '@Url.Action("GetForms", "Home")';
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: _url,
+            success: function(result){
+                currentFormList = result;
+                drawForms();
+            }
+        });
     }
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+
+    function drawForms() {
+        var $list = $("#MyForms").empty();
+        for (var i = 0; i < currentFormList.length; i++) {
+            var curr_item = currentFormList[i];
+            console.info(curr_item);
+            var $li = $("<li class=\"list-group-item\">").html(curr_item.name).attr("id", "item_" + curr_item.id);
+            var $detailsButton = $("<button type=\"button\" onclick=\"OpenForm(" + i + ")\"><i class='fa-solid fa-magnifying-glass'></i></button>").appendTo($li);
+            $li.appendTo($list);
+        }
+        //console.info(currentFieldList);
+    }
+
+    function addForm() {
+        var new_form = {};
+        new_form.name = $("#FormName").val();
+        new_form.description = $("#FormDescription").val();
+        new_form.fields = new Array();
+        for (var i = 0; i < currentFieldList.length; i++) {
+            new_form.fields.push(currentFieldList[i]);
+        }
+        console.info(new_form);
+        $.ajax({
+            type: "POST",
+            url: "/api/AjaxAPI/AjaxMethod",
+            async: false,
+            data: JSON.stringify(new_form),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            success: function (response) {
+                console.log(response)
+                drawForms()
+            }
+        });
+        drawForms();
+    }
+
+    function addField(){
+        var obj = {};
+        obj.name = $("#field_name").val();
+        obj.required = $("#is_required").is(":checked");
+        obj.dataType = $("#data_type").val();
+        currentFieldList.push(obj);
+        drawTable();
+    }
+
+    function drawTable() {
+        var $list = $("#FormListItems").empty();
+        for (var i = 0 ; i < currentFieldList.length; i++){
+            var curr_item = currentFieldList[i];
+            var $li = $("<li class=\"list-group-item\">").html(curr_item.name).attr("id", "item_" + i);
+            var $delButton = $("<button type=\"button\" onclick=\"deleteItem(" + i + ")\"><i class='fa-solid fa-trash'></button>").appendTo($li);
+            $li.appendTo($list);
+        }
+    }
+
+    function deleteItem(index) {
+        currentFieldList.splice(index, 1);
+        drawTable();
+    }
+
+    function OpenForm(id) {
+        var url = '@Url.Action("ShowForm", "Home", new { id = "__id__" })';
+        window.location.href = url.replace('__id__', id);
+    }
+
+    function closePopUp(index) {
+        $("#popup").hide();
+    }
+
+    $('#show_pop_up').click( function (event) {
+        $("#popup").show();
+    })
+
+    $(document).ready(function(){
+        $("#popup").hide();
+        getForms();
+        var url = window.location.href;
+    });
+
+</script>

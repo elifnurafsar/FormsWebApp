@@ -4,6 +4,7 @@ using FormsWebApp.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FormsWebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230426173742_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,14 +47,14 @@ namespace FormsWebApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
-                    b.Property<int?>("Formid")
-                        .HasColumnType("int");
-
                     b.Property<string>("dataType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("form_id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("formid")
                         .HasColumnType("int");
 
                     b.Property<string>("name")
@@ -63,7 +66,7 @@ namespace FormsWebApp.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("Formid");
+                    b.HasIndex("formid");
 
                     b.ToTable("Field");
                 });
@@ -91,16 +94,37 @@ namespace FormsWebApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("usere_mail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("id");
+
+                    b.HasIndex("usere_mail");
 
                     b.ToTable("Form");
                 });
 
             modelBuilder.Entity("FormsWebApp.Models.Field", b =>
                 {
-                    b.HasOne("FormsWebApp.Models.Form", null)
+                    b.HasOne("FormsWebApp.Models.Form", "form")
                         .WithMany("fields")
-                        .HasForeignKey("Formid");
+                        .HasForeignKey("formid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("form");
+                });
+
+            modelBuilder.Entity("FormsWebApp.Models.Form", b =>
+                {
+                    b.HasOne("FormsWebApp.Models.CLogin", "user")
+                        .WithMany()
+                        .HasForeignKey("usere_mail")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("FormsWebApp.Models.Form", b =>

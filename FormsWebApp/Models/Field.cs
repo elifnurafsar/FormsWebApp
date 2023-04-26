@@ -15,6 +15,7 @@ namespace FormsWebApp.Models
         [ForeignKey("Form")]
         public int form_id { get; set; }
 
+        [NotMapped]
         public Form form { get; set; }
     }
 }
